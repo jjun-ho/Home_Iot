@@ -6,9 +6,10 @@ import playsound #mp3파일 재생
 import pandas as pd
 import openpyxl
 import pymysql
+from sqlalchemy import create_engine
 
-my_id = 'han'
-my_pass = 980704
+my_id = "han"
+my_pass = "980704"
 
 timer = " "
 timer = time.strftime('%Y.%m.%d %I:%M:%S %p', time.localtime(time.time()))
@@ -124,17 +125,12 @@ inventors.to_excel('iot.xlsx')
 
 #mysql
 
-h_iot = pymysql.connect(
-    user = 'root',
-    passwd= f'{my_pass}',
-    host= 'localhost',
-    db= 'homedb',
-    charset= 'utf8'
-)
+db = pymysql.connect(host="localhost", user=my_id, password=my_pass, charset="utf8")
+print(db)
+cursor = db.cursor()
+cursor.execute('USE homedb')
+sql = "INSERT INTO `iot`(task) VALUES (%s);"
+cursor.execute(sql, case)
+db.commit()
+db.close()
 
-cursor =h_iot.cursor(pymysql.cursors.DictCursor)
-
-sql = case
-
-cursor.execute(sql)
-h_iot.commit()
