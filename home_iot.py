@@ -5,6 +5,13 @@ import time
 import playsound #mp3파일 재생
 import pandas as pd
 import openpyxl
+import pymysql
+
+my_id = 'han'
+my_pass = 980704
+
+timer = " "
+timer = time.strftime('%Y.%m.%d %I:%M:%S %p', time.localtime(time.time()))
 
 data = {
     '목적': ['불', '온도', '습도', '커튼', '창문'],
@@ -21,29 +28,39 @@ def speak(text):
     tts.save(filename)
     playsound.playsound(filename)
 
-def get_audio():
+def get_audio_main():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         audio = r.listen(source)
         said =" "
         try:
             said = r.recognize_google(audio, language='ko-KR')
-            if(said == "자비스"):
-                speak("네")
-                audio = r.listen(source)
-                said =" "
-                said = r.recognize_google(audio, language='ko-KR')
-                print(said)
+            print(said)
         except Exception as e:
             print("Exception: " + str(e))
     return said
 
+def get_audio():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        audio = r.listen(source, )
+        said =" "
+        said = r.recognize_google(audio, language='ko-KR')
+        if(said == "자비스"):
+            speak("네")
+            said = get_audio_main()
+            print(said)
+        else:
+            print("Nothing")
+            get_audio()
+    return said
+
 speak("안녕하세요 자비스입니다")
-s_text = get_audio()
+s_text = get_audio_main()
 s_list = s_text.split()
 print(s_list)
 object = ""
-motion= ""
+motion = ""
 ending = ""
 for word in s_list:
     if "불" in word:
@@ -75,27 +92,28 @@ print("object: " + object)
 print("motion: " + motion)
 print("ending: " + ending)
 
-if (object == "불") & (motion == "켜") & (ending == "줘"):
+if (object == "불") & (motion == "켜"):
     case = 1
-elif (object == "불") & (motion == "꺼") & (ending == "줘"):
+elif (object == "불") & (motion == "꺼"):
     case = 2
-elif (object == "온도") & (motion == "알려") & (ending == "줘"):
+elif (object == "온도") & (motion == "알려"):
     case = 3
-elif (object == "습도") & (motion == "알려") & (ending == "줘"):
+elif (object == "습도") & (motion == "알려"):
     case = 4
-elif (object == "커튼") & (motion == "열어") & (ending == "줘"):
+elif (object == "커튼") & (motion == "열어"):
     case = 5
-elif (object == "커튼") & (motion == "닫아") & (ending == "줘"):
+elif (object == "커튼") & (motion == "닫아"):
     case = 6
-elif (object == "창문") & (motion == "열어") & (ending == "줘"):
+elif (object == "창문") & (motion == "열어"):
     case = 7
-elif (object == "창문") & (motion == "닫아") & (ending == "줘"):
+elif (object == "창문") & (motion == "닫아"):
     case = 8
 
 print("case: " + str(case))
 
 inventors = pd.DataFrame(
     {
+    '시간': [timer],
     '목적': [object],
     '동작': [motion],
     '어미': [ending],
@@ -104,3 +122,19 @@ inventors = pd.DataFrame(
 
 inventors.to_excel('iot.xlsx')
 
+#mysql
+
+h_iot = pymysql.connect(
+    user = 'root',
+    passwd= f'{my_pass}',
+    host= 'localhost',
+    db= 'homedb',
+    charset= 'utf8'
+)
+
+cursor =h_iot.cursor(pymysql.cursors.DictCursor)
+
+sql = case
+
+cursor.execute(sql)
+h_iot.commit()
