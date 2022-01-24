@@ -34,6 +34,7 @@ def speak(text): #javis의 대답
     filename = 'voice.mp3'
     tts.save(filename)
     playsound.playsound(filename)
+    os.remove(filename)
 
 def get_audio_main(): #실행 문장 음성 인식
     r = sr.Recognizer()
@@ -52,7 +53,7 @@ def get_audio(): #자비스 호출 문장 음성 인식
     javis = False
     r = sr.Recognizer()
     with sr.Microphone() as source:
-        audio = r.listen(source, timeout=1.8)
+        audio = r.listen(source, timeout=0, phrase_time_limit=1.8)
         said = " "
         try:
             said = r.recognize_google(audio, language='ko-KR')
@@ -86,7 +87,7 @@ speak("안녕하세요 자비스입니다")
 
 while True:
     while (javis == False):
-        s_text= get_audio()
+        s_text = get_audio()
         if(javis == True):
             break
     s_list = s_text.split()
